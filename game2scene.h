@@ -15,6 +15,11 @@ class Game2Scene: public QGraphicsScene
 public:
     static int BOARD_LENGTH;
 
+    int whiteScore;
+    int blackScore;
+
+    QString player2;
+
     PawnType player;
     Game2Scene();
 
@@ -34,6 +39,10 @@ public:
     void addPawn(Pawn* pawn);
     void forceAddPawn(Pawn* pawn);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    bool gameIsFull();
+    bool playerHasMoves();
+    void changePlayer();
+    void calculateScore();
     QList<Pawn*>* getPawnsOfInterest(Pawn* pawn);
 signals:
 

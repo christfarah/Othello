@@ -20,9 +20,9 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     QPixmap pixmap(":/images/ot.png");
     QSplashScreen splash(pixmap);
-    QMainWindow *view=MainWindow::getInstance();
     splash.show();
     I::sleep(2);
+    QMainWindow *view=MainWindow::getInstance();
     view->show();
     splash.finish(view);
     return app.exec();

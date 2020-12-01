@@ -2,6 +2,8 @@
 #include <QtGui>
 #include <stdlib.h>
 #include <QMessageBox>
+#include <QLineEdit>
+#include <QInputDialog>
 
 
 Game2Scene::Game2Scene()
@@ -27,6 +29,12 @@ Game2Scene::Game2Scene()
 
     Pawn* whitePawn2 = new Pawn(nullptr, PawnType::WHITE, 4,3);
     this->forceAddPawn(whitePawn2);
+
+    while(player2.isNull() || player2.isEmpty()){
+        player2 = QInputDialog::getText(0, tr("QInputDialog::getText()"),
+                                        tr("User name:"), QLineEdit::Normal,
+                                        QDir::home().dirName());
+    }
 }
 
 void Game2Scene::forceAddPawn(Pawn *pawn){
@@ -91,15 +99,125 @@ void Game2Scene::addPawn(Pawn *pawn){
 
         if (didChangeColor){
             forceAddPawn(pawn);
-            if (player==PawnType::BLACK){
-                player=PawnType::WHITE;
+            changePlayer();
+            if(gameIsFull()){
+                calculateScore();
+                if (blackScore > whiteScore){
+                    QMessageBox::information(0,"Game Ended", "Black won with score: " + QString::number(blackScore));
+                } else if (blackScore < whiteScore){
+                    QMessageBox::information(0,"Game Ended", "White won with score: " + QString::number(whiteScore));
+                } else {
+                     QMessageBox::information(0,"Game Ended", "Tie with score: " + QString::number(whiteScore));
+                }
+            } else if (!playerHasMoves()){
+                changePlayer();
+                if(!playerHasMoves()){
+                    calculateScore();
+                    if (blackScore > whiteScore){
+                        QMessageBox::information(0,"Game Ended", "Black won with score: " + QString::number(blackScore));
+                    } else if (blackScore < whiteScore){
+                        QMessageBox::information(0,"Game Ended", "White won with score: " + QString::number(whiteScore));
+                    } else {
+                         QMessageBox::information(0,"Game Ended", "Tie with score: " + QString::number(whiteScore));
+                    }
+                }
             }
-            else {
-                player=PawnType::BLACK;
-            }
-            MainWindow::getInstance()->changePlayer();
         }
     }
+}
+
+void Game2Scene::changePlayer(){
+    if (player==PawnType::BLACK){
+        player=PawnType::WHITE;
+    }
+    else {
+        player=PawnType::BLACK;
+    }
+    MainWindow::getInstance()->changePlayer();
+}
+
+void Game2Scene::calculateScore(){
+    whiteScore=0;
+    blackScore=0;
+    for(int i = 0; i<8; i++){
+        for(int j = 0; j<8; j++){
+            if (pawns[i][j] != nullptr){
+                if(pawns[i][j]->type == PawnType::WHITE){
+                    whiteScore++;
+                } else if (pawns[i][j]->type == PawnType::BLACK){
+                    blackScore++;
+                }
+            }
+        }
+    }
+}
+
+bool Game2Scene::gameIsFull(){
+    QList<Pawn*>* emptyPawns = new QList<Pawn*>();
+    for(int i = 0; i<8; i++){
+        for(int j = 0; j<8; j++){
+            if (pawns[i][j] == nullptr){
+                emptyPawns->append(pawns[i][j]);
+            }
+        }
+    }
+
+    if(emptyPawns->size() == 0){
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+bool Game2Scene::playerHasMoves(){
+    QList<Pawn*>* emptyPawns = new QList<Pawn*>();
+    for(int i = 0; i<8; i++){
+        for(int j = 0; j<8; j++){
+            if (pawns[i][j] == nullptr){
+                emptyPawns->append(new Pawn(nullptr,player,i,j));
+            }
+        }
+    }
+
+    for(int i=0; i<emptyPawns->size(); i++){
+        Pawn* pawn = emptyPawns->at(i);
+        QList<Pawn*>* pawnsOfInterest = getPawnsOfInterest(pawn);
+        for (int i=0;i<pawnsOfInterest->size();i++){
+            Pawn *pawnOfInterest= pawnsOfInterest->at(i);
+            int xInc=0;
+            int yInc=0;
+            if (pawnOfInterest->yPos>pawn->yPos){
+                yInc=+1;
+            }
+            if (pawnOfInterest->yPos<pawn->yPos){
+                yInc=-1;
+            }
+            if (pawnOfInterest->xPos>pawn->xPos){
+                xInc=+1;
+            }
+            if (pawnOfInterest->xPos<pawn->xPos){
+                xInc=-1;
+            }
+
+           QList<Pawn *> *pawnLine=new QList<Pawn*>();
+           int xPawnLine=pawnOfInterest->xPos;
+           int yPawnLine=pawnOfInterest->yPos;
+           while ((xPawnLine>=0 && xPawnLine<=7) && (yPawnLine>=0 && yPawnLine<=7) && (pawns[xPawnLine][yPawnLine]!=nullptr) && (pawns[xPawnLine][yPawnLine]->type==pawnOfInterest->type)){
+                pawnLine->append(pawns[xPawnLine][yPawnLine]);
+                xPawnLine+=xInc;
+                yPawnLine+=yInc;
+           }
+           if(!((xPawnLine>=0 && xPawnLine<=7) && (yPawnLine>=0 && yPawnLine<=7) && (pawns[xPawnLine][yPawnLine]!=nullptr) && (pawns[xPawnLine][yPawnLine]->type==player))){
+                pawnLine=new QList<Pawn*>();
+           }
+
+           if(pawnLine->size()>0){
+               return true;
+           }
+        }
+    }
+    return false;
 }
 
 QList<Pawn*>* Game2Scene::getPawnsOfInterest(Pawn *pawn){
