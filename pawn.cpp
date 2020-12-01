@@ -4,8 +4,8 @@
 Pawn::Pawn(QObject *parent, PawnType type, int x, int y) : QObject(parent)
 {
     int length = Game2Scene::BOARD_LENGTH/10;
-    this->x = x;
-    this->y = y;
+    this->xPos = x;
+    this->yPos = y;
     this->type=type;
     if (type == PawnType::BLACK){
         this->setPixmap((QPixmap(":/images/pion_noir.png")).scaled(length, length));
@@ -15,11 +15,11 @@ Pawn::Pawn(QObject *parent, PawnType type, int x, int y) : QObject(parent)
 }
 
 bool Pawn::isInMyBorder(Pawn *pawn){
-    if(x == pawn->x && y == pawn->y){
+    if(xPos == pawn->xPos && yPos == pawn->yPos){
         return false;
     }
 
-    if((pawn->x <= x+1) && (pawn->x >= x-1) && (pawn->y <= y+1) && (pawn->y >= y-1)){
+    if((pawn->xPos <= xPos+1) && (pawn->xPos >= xPos-1) && (pawn->yPos <= yPos+1) && (pawn->yPos >= yPos-1)){
         return true;
     }
 

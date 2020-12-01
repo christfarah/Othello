@@ -30,28 +30,75 @@ Game2Scene::Game2Scene()
 }
 
 void Game2Scene::forceAddPawn(Pawn *pawn){
-    int xPosition = pawn->x * 80;
-    int yPosition = pawn->y * 80;
+    int xPosition = pawn->xPos * 80;
+    int yPosition = pawn->yPos * 80;
 
     xPosition += ((Game2Scene::BOARD_LENGTH/8) - (Game2Scene::BOARD_LENGTH/10))/2;
     yPosition += ((Game2Scene::BOARD_LENGTH/8) - (Game2Scene::BOARD_LENGTH/10))/2;
     pawn->setPos(xPosition,yPosition);
     this->addItem(pawn);
-    pawns[pawn->x][pawn->y]=pawn;
+    pawns[pawn->xPos][pawn->yPos]=pawn;
 }
 
 void Game2Scene::addPawn(Pawn *pawn){
 
-    if (pawns[pawn->x][pawn->y] == nullptr){
+    if (pawns[pawn->xPos][pawn->yPos] == nullptr){
 
-        int xPosition = pawn->x * 80;
-        int yPosition = pawn->y * 80;
+        int xPosition = pawn->xPos * 80;
+        int yPosition = pawn->yPos * 80;
 
         xPosition += ((Game2Scene::BOARD_LENGTH/8) - (Game2Scene::BOARD_LENGTH/10))/2;
         yPosition += ((Game2Scene::BOARD_LENGTH/8) - (Game2Scene::BOARD_LENGTH/10))/2;
 
         QList<Pawn*>* pawnsOfInterest = getPawnsOfInterest(pawn);
+        bool didChangeColor=false;
+        for (int i=0;i<pawnsOfInterest->size();i++){
+            Pawn *pawnOfInterest= pawnsOfInterest->at(i);
+            int xInc=0;
+            int yInc=0;
+            if (pawnOfInterest->yPos>pawn->yPos){
+                yInc=+1;
+            }
+            if (pawnOfInterest->yPos<pawn->yPos){
+                yInc=-1;
+            }
+            if (pawnOfInterest->xPos>pawn->xPos){
+                xInc=+1;
+            }
+            if (pawnOfInterest->xPos<pawn->xPos){
+                xInc=-1;
+            }
 
+           QList<Pawn *> *pawnLine=new QList<Pawn*>();
+           int xPawnLine=pawnOfInterest->xPos;
+           int yPawnLine=pawnOfInterest->yPos;
+           while ((xPawnLine>=0 && xPawnLine<=7) && (yPawnLine>=0 && yPawnLine<=7) && (pawns[xPawnLine][yPawnLine]!=nullptr) && (pawns[xPawnLine][yPawnLine]->type==pawnOfInterest->type)){
+                pawnLine->append(pawns[xPawnLine][yPawnLine]);
+                xPawnLine+=xInc;
+                yPawnLine+=yInc;
+           }
+           if(!((xPawnLine>=0 && xPawnLine<=7) && (yPawnLine>=0 && yPawnLine<=7) && (pawns[xPawnLine][yPawnLine]!=nullptr) && (pawns[xPawnLine][yPawnLine]->type==player))){
+                pawnLine=new QList<Pawn*>();
+           }
+
+           for(int i=0;i<pawnLine->size();i++){
+               Pawn *newPawn=new Pawn(nullptr,player,pawnLine->at(i)->xPos,pawnLine->at(i)->yPos);
+               forceAddPawn(newPawn);
+               delete pawnLine->at(i);
+               didChangeColor=true;
+           }
+        }
+
+        if (didChangeColor){
+            forceAddPawn(pawn);
+            if (player==PawnType::BLACK){
+                player=PawnType::WHITE;
+            }
+            else {
+                player=PawnType::BLACK;
+            }
+            MainWindow::getInstance()->changePlayer();
+        }
     }
 }
 

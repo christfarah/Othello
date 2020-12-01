@@ -13,8 +13,8 @@ class Pawn: public QObject, public QGraphicsPixmapItem
 {
 public:
     PawnType type;
-    int x;
-    int y;
+    int xPos;
+    int yPos;
     explicit Pawn(QObject *parent = nullptr, PawnType type = PawnType::BLACK, int x = 0, int y = 0);
 
     void changeColor(PawnType type);

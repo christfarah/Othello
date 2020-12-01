@@ -11,10 +11,12 @@ CONFIG += c++11
 SOURCES += \
     game2scene.cpp \
     main.cpp \
+    mainwindow.cpp \
     pawn.cpp
 
 HEADERS += \
     game2scene.h \
+    mainwindow.h \
     pawn.h
 
 FORMS +=

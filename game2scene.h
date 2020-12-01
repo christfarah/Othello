@@ -4,6 +4,7 @@
 #include <QPixmap>
 #include <QtWidgets>
 #include "pawn.h"
+#include "mainwindow.h"
 
 
 
